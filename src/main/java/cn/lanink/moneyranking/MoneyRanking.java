@@ -17,6 +17,8 @@ import java.util.Map;
  */
 public class MoneyRanking extends PluginBase {
 
+    public static final String VERSION = "?";
+
     @Getter
     private MoneyProvider moneyProvider;
 
