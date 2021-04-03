@@ -20,7 +20,10 @@ public class MoneyRanking extends PluginBase {
     public static final String VERSION = "?";
 
     @Getter
-    private MoneyProvider moneyProvider;
+    private MoneyProvider defaultMoneyProvider;
+
+    @Getter
+    private final HashMap<MoneyProvider.EconomyAPIType, MoneyProvider> moneyProviders = new HashMap<>();
 
     @Getter
     private final HashMap<String, Ranking> rankings = new HashMap<>();
@@ -32,8 +35,15 @@ public class MoneyRanking extends PluginBase {
 
     @Override
     public void onEnable() {
-        this.moneyProvider = new MoneyProvider();
-        this.loadAllRanking();
+        this.defaultMoneyProvider = new MoneyProvider();
+
+        HashMap<MoneyProvider.EconomyAPIType, MoneyProvider> moneyProviders = this.getMoneyProviders();
+        moneyProviders.put(MoneyProvider.EconomyAPIType.ECONOMY_API, new MoneyProvider(MoneyProvider.EconomyAPIType.ECONOMY_API));
+        moneyProviders.put(MoneyProvider.EconomyAPIType.MONEY, new MoneyProvider(MoneyProvider.EconomyAPIType.MONEY));
+        moneyProviders.put(MoneyProvider.EconomyAPIType.PLAYER_POINT, new MoneyProvider(MoneyProvider.EconomyAPIType.PLAYER_POINT));
+        moneyProviders.put(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY, new MoneyProvider(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY));
+
+        this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
     }
 
     private void loadAllRanking() {
@@ -55,8 +65,12 @@ public class MoneyRanking extends PluginBase {
                 (double) data.get("z"),
                 this.getServer().getLevelByName(levelName));
         Ranking ranking = RankingAPI.createRanking(this, name, position);
-        ranking.setRankingList(() -> this.getMoneyProvider().getAllPlayerMoney());
-        this.getRankings().put(name, ranking);
+        String moneyProvider = (String) data.getOrDefault("moneyProvider", this.getDefaultMoneyProvider().getEconomyAPIType().toString());
+        ranking.setRankingList(() -> this.getMoneyProviders().get(MoneyProvider.EconomyAPIType.valueOf(moneyProvider)).getAllPlayerMoney());
+        Ranking oldRanking = this.getRankings().put(name, ranking);
+        if (oldRanking != null) {
+            oldRanking.close();
+        }
     }
 
     @Override
@@ -88,6 +102,13 @@ public class MoneyRanking extends PluginBase {
                             data.put("y", player.getY());
                             data.put("z", player.getZ());
                             data.put("level", player.getLevel().getFolderName());
+                            if (args.length > 2) {
+                                if (MoneyProvider.EconomyAPIType.isExist(args[2])) {
+                                    data.put("moneyProvider", args[2]);
+                                }else {
+                                    sender.sendMessage("§c不存在 " + args[2] + " 经济核心！");
+                                }
+                            }
 
                             this.loadRanking(name, data);
 
@@ -118,7 +139,7 @@ public class MoneyRanking extends PluginBase {
                         }
                         break;
                     default:
-                        sender.sendMessage("§a/moneyranking add <排行榜名称> §e在当前位置添加一个经济排行榜\n" +
+                        sender.sendMessage("§a/moneyranking add <排行榜名称> <经济核心> §e在当前位置添加一个经济排行榜\n" +
                                 "§a/moneyranking remove <排行榜名称> §e删除一个排行榜");
                         break;
                 }

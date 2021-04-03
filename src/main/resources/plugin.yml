@@ -1,19 +1,19 @@
 name: MoneyRanking
 main: cn.lanink.moneyranking.MoneyRanking
-version: "0.0.1"
+version: "0.1.0"
 api: ["1.0.0"]
 load: POSTWORLD
 author: "LT_Name"
 softdepend:
-  - playerPoints
-  - EconomyAPI
-  - Money
-  - LlamaEconomy
+  - "playerPoints"
+  - "EconomyAPI"
+  - "Money"
+  - "LlamaEconomy"
 
 commands:
   moneyranking:
     description: "§a经济排行榜命令"
-    usage: "§a/moneyranking add <排行榜名称> §e在当前位置添加一个经济排行榜\n§a/moneyranking remove <排行榜名称> §e删除一个排行榜"
+    usage: "§a/moneyranking add <排行榜名称> <经济核心> §e在当前位置添加一个经济排行榜\n§a/moneyranking remove <排行榜名称> §e删除一个排行榜"
     permission: moneyranking.admin
 
 permissions:

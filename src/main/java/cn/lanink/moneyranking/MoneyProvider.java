@@ -8,7 +8,10 @@ import money.Money;
 import net.lldv.llamaeconomy.LlamaEconomy;
 import net.player.api.Point;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -18,20 +21,47 @@ import java.util.*;
  */
 public class MoneyProvider {
 
-    private EconomyAPIType money;
+    private EconomyAPIType economyAPIType;
 
     public MoneyProvider() {
         if (Server.getInstance().getPluginManager().getPlugin("EconomyAPI") != null) {
-            this.money = EconomyAPIType.ECONOMY_API;
+            this.economyAPIType = EconomyAPIType.ECONOMY_API;
         } else if (Server.getInstance().getPluginManager().getPlugin("Money") != null) {
-            this.money = EconomyAPIType.MONEY;
+            this.economyAPIType = EconomyAPIType.MONEY;
         } else if (Server.getInstance().getPluginManager().getPlugin("LlamaEconomy") != null) {
-            this.money = EconomyAPIType.LLAMA_ECONOMY;
+            this.economyAPIType = EconomyAPIType.LLAMA_ECONOMY;
         } else if (Server.getInstance().getPluginManager().getPlugin("playerPoints") != null) {
-            this.money = EconomyAPIType.PLAYER_POINT;
+            this.economyAPIType = EconomyAPIType.PLAYER_POINT;
         } else {
-            this.money = EconomyAPIType.NULL;
+            this.economyAPIType = EconomyAPIType.NULL;
         }
+    }
+
+    public MoneyProvider(EconomyAPIType economyAPIType) {
+        this.economyAPIType = economyAPIType;
+        switch (this.economyAPIType) {
+            case ECONOMY_API:
+                if (Server.getInstance().getPluginManager().getPlugin("EconomyAPI") != null) {
+                    return;
+                }
+                break;
+            case MONEY:
+                if (Server.getInstance().getPluginManager().getPlugin("Money") != null) {
+                    return;
+                }
+                break;
+            case PLAYER_POINT:
+                if (Server.getInstance().getPluginManager().getPlugin("playerPoints") != null) {
+                    return;
+                }
+                break;
+            case LLAMA_ECONOMY:
+                if (Server.getInstance().getPluginManager().getPlugin("LlamaEconomy") != null) {
+                    return;
+                }
+                break;
+        }
+        this.economyAPIType = EconomyAPIType.NULL;
     }
 
     public enum EconomyAPIType {
@@ -49,28 +79,37 @@ public class MoneyProvider {
             this.name = name;
         }
 
+        public static boolean isExist(String name) {
+            for (EconomyAPIType economyAPIType : EconomyAPIType.values()) {
+                if (economyAPIType.toString().equalsIgnoreCase(name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 
     public EconomyAPIType getEconomyAPIType() {
-        return money;
+        return economyAPIType;
     }
 
     public MoneyProvider setEconomyAPIType(EconomyAPIType money) {
-        this.money = money;
+        this.economyAPIType = money;
         return this;
     }
 
     public String getMonetaryUnit() {
-        if (this.money == EconomyAPIType.ECONOMY_API) {
+        if (this.economyAPIType == EconomyAPIType.ECONOMY_API) {
             return EconomyAPI.getInstance().getMonetaryUnit();
-        } else if (this.money == EconomyAPIType.LLAMA_ECONOMY) {
+        } else if (this.economyAPIType == EconomyAPIType.LLAMA_ECONOMY) {
             return LlamaEconomy.getAPI().getMonetaryUnit();
         }
         return "$";
     }
 
     public Map<String, Double> getAllPlayerMoney() {
-        switch (this.money) {
+        switch (this.economyAPIType) {
             case MONEY:
                 HashMap<String, Double> map = new HashMap<>();
                 for (String name : Money.getInstance().getPlayers()) {
@@ -110,7 +149,7 @@ public class MoneyProvider {
     }
 
     private double myMoney(String player) {
-        switch (this.money) {
+        switch (this.economyAPIType) {
             case MONEY:
                 if (Money.getInstance().getPlayers().contains(player)) {
                     return Money.getInstance().getMoney(player);
@@ -133,7 +172,7 @@ public class MoneyProvider {
     }
 
     private void addMoney(String player, double money) {
-        switch (this.money) {
+        switch (this.economyAPIType) {
             case MONEY:
                 if (Money.getInstance().getPlayers().contains(player)) {
                     Money.getInstance().addMoney(player, (float) money);
@@ -159,7 +198,7 @@ public class MoneyProvider {
     }
 
     private void reduceMoney(String player, double money) {
-        switch (this.money) {
+        switch (this.economyAPIType) {
             case MONEY:
                 if (Money.getInstance().getPlayers().contains(player)) {
                     Money.getInstance().reduceMoney(player, (float) money);
