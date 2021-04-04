@@ -1,5 +1,7 @@
 package cn.lanink.moneyranking;
 
+import cn.lanink.moneyranking.form.FormCreate;
+import cn.lanink.moneyranking.form.FormListener;
 import cn.lanink.rankingapi.Ranking;
 import cn.lanink.rankingapi.RankingAPI;
 import cn.nukkit.Player;
@@ -19,6 +21,8 @@ public class MoneyRanking extends PluginBase {
 
     public static final String VERSION = "?";
 
+    private static MoneyRanking instance;
+
     @Getter
     private MoneyProvider defaultMoneyProvider;
 
@@ -28,8 +32,13 @@ public class MoneyRanking extends PluginBase {
     @Getter
     private final HashMap<String, Ranking> rankings = new HashMap<>();
 
+    public static MoneyRanking getInstance() {
+        return instance;
+    }
+
     @Override
     public void onLoad() {
+        instance = this;
         this.saveDefaultConfig();
     }
 
@@ -43,6 +52,9 @@ public class MoneyRanking extends PluginBase {
         moneyProviders.put(MoneyProvider.EconomyAPIType.PLAYER_POINT, new MoneyProvider(MoneyProvider.EconomyAPIType.PLAYER_POINT));
         moneyProviders.put(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY, new MoneyProvider(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY));
 
+        this.getServer().getPluginManager().registerEvents(new FormListener(this), this);
+
+        //等所有经济前置加载完成后加载排行榜
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
     }
 
@@ -53,7 +65,7 @@ public class MoneyRanking extends PluginBase {
         }
     }
 
-    private void loadRanking(String name, Map<String, Object> data) {
+    public void loadRanking(String name, Map<String, Object> data) {
         String levelName = (String) data.get("level");
         if (!this.getServer().loadLevel(levelName)) {
             this.getLogger().error("世界：" + levelName + " 加载失败！无法加载此世界的排行榜！");
@@ -65,8 +77,9 @@ public class MoneyRanking extends PluginBase {
                 (double) data.get("z"),
                 this.getServer().getLevelByName(levelName));
         Ranking ranking = RankingAPI.createRanking(this, name, position);
-        String moneyProvider = (String) data.getOrDefault("moneyProvider", this.getDefaultMoneyProvider().getEconomyAPIType().toString());
-        ranking.setRankingList(() -> this.getMoneyProviders().get(MoneyProvider.EconomyAPIType.valueOf(moneyProvider)).getAllPlayerMoney());
+        MoneyProvider.EconomyAPIType moneyProvider = MoneyProvider.EconomyAPIType.fromName(
+                (String) data.getOrDefault("moneyProvider", this.getDefaultMoneyProvider().getEconomyAPIType().toString()));
+        ranking.setRankingList(() -> this.getMoneyProviders().get(moneyProvider).getAllPlayerMoney());
         Ranking oldRanking = this.getRankings().put(name, ranking);
         if (oldRanking != null) {
             oldRanking.close();
@@ -84,65 +97,10 @@ public class MoneyRanking extends PluginBase {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if ("moneyranking".equalsIgnoreCase(command.getName())) {
-            if (args.length > 0) {
-                switch (args[0]) {
-                    case "add":
-                        if (args.length > 1) {
-                            if (!sender.isPlayer()) {
-                                sender.sendMessage("§c请在游戏内使用此命令！");
-                                return true;
-                            }
-                            Player player = (Player) sender;
-
-                            String name = args[1];
-                            HashMap<String, Map<String, Object>> rankings = this.getConfig().get("rankings", new HashMap<>());
-
-                            HashMap<String, Object> data = new HashMap<>();
-                            data.put("x", player.getX());
-                            data.put("y", player.getY());
-                            data.put("z", player.getZ());
-                            data.put("level", player.getLevel().getFolderName());
-                            if (args.length > 2) {
-                                if (MoneyProvider.EconomyAPIType.isExist(args[2])) {
-                                    data.put("moneyProvider", args[2]);
-                                }else {
-                                    sender.sendMessage("§c不存在 " + args[2] + " 经济核心！");
-                                }
-                            }
-
-                            this.loadRanking(name, data);
-
-                            rankings.put(name, data);
-                            this.getConfig().set("rankings", rankings);
-                            this.getConfig().save();
-
-                            sender.sendMessage("§a排行榜添加成功！");
-                        }else {
-                            sender.sendMessage("§c请输入排行榜名称！");
-                        }
-                        break;
-                    case "remove":
-                        if (args.length > 1) {
-                            HashMap<String, Map<String, Object>> rankings = this.getConfig().get("rankings", new HashMap<>());
-                            if (rankings.containsKey(args[1])) {
-                                rankings.remove(args[1]);
-                                this.getConfig().set("rankings", rankings);
-                                this.getConfig().save();
-                            }
-                            Ranking ranking = this.getRankings().remove(args[1]);
-                            if (ranking != null) {
-                                ranking.close();
-                            }
-                            sender.sendMessage("§a排行榜删除成功！");
-                        }else {
-                            sender.sendMessage("§c请输入排行榜名称！");
-                        }
-                        break;
-                    default:
-                        sender.sendMessage("§a/moneyranking add <排行榜名称> <经济核心> §e在当前位置添加一个经济排行榜\n" +
-                                "§a/moneyranking remove <排行榜名称> §e删除一个排行榜");
-                        break;
-                }
+            if (sender.isPlayer()) {
+                FormCreate.sendMainMenu((Player) sender);
+            } else {
+                sender.sendMessage("§c请在游戏内使用此命令！");
             }
             return true;
         }

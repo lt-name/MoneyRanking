@@ -7,6 +7,7 @@ import me.onebone.economyapi.EconomyAPI;
 import money.Money;
 import net.lldv.llamaeconomy.LlamaEconomy;
 import net.player.api.Point;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -68,7 +69,7 @@ public class MoneyProvider {
 
         ECONOMY_API("EconomyAPI"),
         MONEY("Money"),
-        PLAYER_POINT("playerPoints"),
+        PLAYER_POINT("PlayerPoints"),
         LLAMA_ECONOMY("LlamaEconomy"),
         NULL("Null");
 
@@ -79,13 +80,22 @@ public class MoneyProvider {
             this.name = name;
         }
 
-        public static boolean isExist(String name) {
+        public static boolean isExist(@NotNull String name) {
             for (EconomyAPIType economyAPIType : EconomyAPIType.values()) {
-                if (economyAPIType.toString().equalsIgnoreCase(name)) {
+                if (economyAPIType.getName().equalsIgnoreCase(name)) {
                     return true;
                 }
             }
             return false;
+        }
+
+        public static EconomyAPIType fromName(@NotNull String name) {
+            for (EconomyAPIType economyAPIType : EconomyAPIType.values()) {
+                if (economyAPIType.getName().equalsIgnoreCase(name)) {
+                    return economyAPIType;
+                }
+            }
+            return NULL;
         }
 
     }
@@ -127,7 +137,9 @@ public class MoneyProvider {
             case LLAMA_ECONOMY:
                 return LlamaEconomy.getAPI().getAll();
             default:
-                return new HashMap<>();
+                HashMap<String, Double> map1 = new HashMap<>();
+                map1.put("获取数据失败,请检查经济核心", -1D);
+                return map1;
         }
     }
 
