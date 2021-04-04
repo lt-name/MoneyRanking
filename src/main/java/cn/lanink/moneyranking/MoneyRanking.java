@@ -56,6 +56,11 @@ public class MoneyRanking extends PluginBase {
 
         //等所有经济前置加载完成后加载排行榜
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
+
+        this.getLogger().info("加载完成！版本：" + VERSION);
+        this.getServer().getScheduler().scheduleTask(this, () -> {
+            this.getLogger().warning("§e MoneyRanking §a是一款§e免费§a插件，开源链接:§e https://github.com/lt-name/MoneyRanking");
+        });
     }
 
     private void loadAllRanking() {
