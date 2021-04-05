@@ -139,6 +139,14 @@ public class MoneyProvider {
             default:
                 HashMap<String, Double> map1 = new HashMap<>();
                 map1.put("获取数据失败,请检查经济核心", -1D);
+
+                //debug
+                /*map1.put("ltname", Double.MAX_VALUE);
+                Random random = new Random();
+                for (int i=0; i < 100000; i++) {
+                    map1.put("test" + random.nextInt(10000000), random.nextInt(1000000) * 1D);
+                }*/
+
                 return map1;
         }
     }
