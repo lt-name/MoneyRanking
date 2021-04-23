@@ -1,6 +1,6 @@
 name: MoneyRanking
 main: cn.lanink.moneyranking.MoneyRanking
-version: "1.0.0"
+version: "1.1.0"
 api: ["1.0.0"]
 load: POSTWORLD
 author: "LT_Name"
@@ -14,7 +14,7 @@ softdepend:
 
 commands:
   moneyranking:
-    description: "§a经济排行榜命令"
+    description: "§aMoneyRanking command"
     usage: "§a/moneyranking 打开GUI界面"
     permission: moneyranking.admin
 

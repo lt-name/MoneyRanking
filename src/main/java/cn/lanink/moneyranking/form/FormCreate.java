@@ -41,14 +41,14 @@ public class FormCreate {
 
     public static void sendMainMenu(@NotNull Player player) {
         FormWindowSimple simple = new FormWindowSimple(PLUGIN_NAME, "");
-        simple.addButton(new ElementButton("添加新的排行榜"));
-        simple.addButton(new ElementButton("删除已有排行榜"));
+        simple.addButton(new ElementButton(MoneyRanking.getInstance().getLanguage().translateString("add_new_ranking")));
+        simple.addButton(new ElementButton(MoneyRanking.getInstance().getLanguage().translateString("delete_existing_ranking")));
         showFormWindow(player, simple, FormType.MAIN_MENU);
     }
 
     public static void sendAddRankingMenu(@NotNull Player player) {
         FormWindowCustom custom = new FormWindowCustom(PLUGIN_NAME);
-        custom.addElement(new ElementInput("排行榜名称"));
+        custom.addElement(new ElementInput(MoneyRanking.getInstance().getLanguage().translateString("ranking_name")));
         ArrayList<String> list = new ArrayList<>();
         for (MoneyProvider.EconomyAPIType economyAPIType : MoneyProvider.EconomyAPIType.values()) {
             if (economyAPIType == MoneyProvider.EconomyAPIType.NULL) {
@@ -56,13 +56,14 @@ public class FormCreate {
             }
             list.add(economyAPIType.getName());
         }
-        custom.addElement(new ElementDropdown("经济API", list));
+        custom.addElement(new ElementDropdown(MoneyRanking.getInstance().getLanguage().translateString("economic_API"), list));
         showFormWindow(player, custom, FormType.ADD_RANKING_MENU);
     }
 
     public static void sendRemoveRankingMenu(@NotNull Player player) {
         FormWindowCustom custom = new FormWindowCustom(PLUGIN_NAME);
-        custom.addElement(new ElementDropdown("选择要删除的排行榜", new ArrayList<>(MoneyRanking.getInstance().getRankings().keySet())));
+        custom.addElement(new ElementDropdown(MoneyRanking.getInstance().getLanguage().translateString("select_the_ranking_to_delete"),
+                new ArrayList<>(MoneyRanking.getInstance().getRankings().keySet())));
         showFormWindow(player, custom, FormType.REMOVE_RANKING_MENU);
     }
 

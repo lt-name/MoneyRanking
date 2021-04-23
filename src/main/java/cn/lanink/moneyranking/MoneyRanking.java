@@ -2,6 +2,7 @@ package cn.lanink.moneyranking;
 
 import cn.lanink.moneyranking.form.FormCreate;
 import cn.lanink.moneyranking.form.FormListener;
+import cn.lanink.moneyranking.utils.Language;
 import cn.lanink.rankingapi.Ranking;
 import cn.lanink.rankingapi.RankingAPI;
 import cn.nukkit.Player;
@@ -11,6 +12,7 @@ import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import lombok.Getter;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,9 @@ public class MoneyRanking extends PluginBase {
     @Getter
     private final HashMap<String, Ranking> rankings = new HashMap<>();
 
+    @Getter
+    private Language language;
+
     public static MoneyRanking getInstance() {
         return instance;
     }
@@ -40,6 +45,11 @@ public class MoneyRanking extends PluginBase {
     public void onLoad() {
         instance = this;
         this.saveDefaultConfig();
+
+        this.saveResource("Language/zh_CN.properties");
+        this.saveResource("Language/en_US.properties");
+        this.language = new Language(new File(this.getDataFolder() + "/Language/" +
+                                this.getConfig().getString("language", "zh_CN") + ".properties"));
     }
 
     @Override
@@ -57,9 +67,9 @@ public class MoneyRanking extends PluginBase {
         //等所有经济前置加载完成后加载排行榜
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
 
-        this.getLogger().info("加载完成！版本：" + VERSION);
+        this.getLogger().info("§eMoneyRanking §aEnabled！ Version:" + VERSION);
         this.getServer().getScheduler().scheduleTask(this, () -> {
-            this.getLogger().warning("§e MoneyRanking §a是一款§e免费§a插件，开源链接:§e https://github.com/lt-name/MoneyRanking");
+            this.getLogger().warning("§e MoneyRanking §ais a§efree§aplugin，github:§e https://github.com/lt-name/MoneyRanking");
         });
     }
 
@@ -73,7 +83,7 @@ public class MoneyRanking extends PluginBase {
     public void loadRanking(String name, Map<String, Object> data) {
         String levelName = (String) data.get("level");
         if (!this.getServer().loadLevel(levelName)) {
-            this.getLogger().error("世界：" + levelName + " 加载失败！无法加载此世界的排行榜！");
+            this.getLogger().error(this.getLanguage().translateString("ranking_loadFailed_world", levelName));
             return;
         }
         Position position = new Position(
@@ -105,7 +115,7 @@ public class MoneyRanking extends PluginBase {
             if (sender.isPlayer()) {
                 FormCreate.sendMainMenu((Player) sender);
             } else {
-                sender.sendMessage("§c请在游戏内使用此命令！");
+                sender.sendMessage(this.getLanguage().translateString("used_command_in_game"));
             }
             return true;
         }

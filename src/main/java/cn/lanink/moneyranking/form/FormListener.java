@@ -23,7 +23,7 @@ import static cn.lanink.moneyranking.form.FormCreate.FORM_CACHE;
  */
 public class FormListener implements Listener {
 
-    private MoneyRanking moneyRanking;
+    private final MoneyRanking moneyRanking;
 
     public FormListener(MoneyRanking moneyRanking) {
         this.moneyRanking = moneyRanking;
@@ -78,13 +78,13 @@ public class FormListener implements Listener {
                 if (MoneyProvider.EconomyAPIType.isExist(eapi)) {
                     data.put("moneyProvider", eapi);
                 } else {
-                    player.sendMessage("§c不存在 " + eapi + " 经济核心！使用默认经济核心！");
+                    player.sendMessage(this.moneyRanking.getLanguage().translateString("use_default_economic_core", eapi));
                 }
                 this.moneyRanking.loadRanking(name, data);
                 rankings.put(name, data);
                 config.set("rankings", rankings);
                 config.save();
-                player.sendMessage("§a排行榜添加成功！");
+                player.sendMessage(this.moneyRanking.getLanguage().translateString("ranking_added_successfully"));
             }else if (cache == FormCreate.FormType.REMOVE_RANKING_MENU) {
                 String name = response.getDropdownResponse(0).getElementContent();
                 Config config = this.moneyRanking.getConfig();
@@ -98,7 +98,7 @@ public class FormListener implements Listener {
                 if (oldRanking != null) {
                     oldRanking.close();
                 }
-                player.sendMessage("§a排行榜删除成功！");
+                player.sendMessage(this.moneyRanking.getLanguage().translateString("ranking_deleted_successfully"));
             }
         }
 
