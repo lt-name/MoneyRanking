@@ -68,9 +68,8 @@ public class MoneyRanking extends PluginBase {
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
 
         this.getLogger().info("§eMoneyRanking §aEnabled！ Version:" + VERSION);
-        this.getServer().getScheduler().scheduleTask(this, () -> {
-            this.getLogger().warning("§e MoneyRanking §ais a§efree§aplugin，github:§e https://github.com/lt-name/MoneyRanking");
-        });
+        this.getServer().getScheduler().scheduleTask(this, () ->
+                this.getLogger().warning("§e MoneyRanking §ais a §efree §aplugin，github:§e https://github.com/lt-name/MoneyRanking"));
     }
 
     private void loadAllRanking() {
