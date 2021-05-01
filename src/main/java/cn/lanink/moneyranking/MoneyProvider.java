@@ -1,5 +1,6 @@
 package cn.lanink.moneyranking;
 
+import cn.lanink.rankingapi.RankingAPI;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import lombok.Getter;
@@ -9,10 +10,7 @@ import net.lldv.llamaeconomy.LlamaEconomy;
 import net.player.api.Point;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -119,6 +117,17 @@ public class MoneyProvider {
     }
 
     public Map<String, Double> getAllPlayerMoney() {
+        //debug
+        if (RankingAPI.debug) {
+            HashMap<String, Double> debugMap = new HashMap<>();
+            debugMap.put("ltname", Double.MAX_VALUE);
+            Random random = new Random();
+            for (int i=0; i < 100000; i++) {
+                debugMap.put("test" + random.nextInt(10000000), random.nextInt(1000000) * 1D);
+            }
+            return debugMap;
+        }
+
         switch (this.economyAPIType) {
             case MONEY:
                 HashMap<String, Double> map = new HashMap<>();
@@ -137,17 +146,9 @@ public class MoneyProvider {
             case LLAMA_ECONOMY:
                 return LlamaEconomy.getAPI().getAll();
             default:
-                HashMap<String, Double> map1 = new HashMap<>();
-                map1.put("获取数据失败,请检查经济核心", -1D);
-
-                //debug
-                /*map1.put("ltname", Double.MAX_VALUE);
-                Random random = new Random();
-                for (int i=0; i < 100000; i++) {
-                    map1.put("test" + random.nextInt(10000000), random.nextInt(1000000) * 1D);
-                }*/
-
-                return map1;
+                HashMap<String, Double> emptyMap = new HashMap<>();
+                emptyMap.put(MoneyRanking.getInstance().getLanguage().translateString("ranking_empty_data"), -1D);
+                return emptyMap;
         }
     }
 

@@ -10,10 +10,13 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.utils.Config;
 import lombok.Getter;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,10 +49,21 @@ public class MoneyRanking extends PluginBase {
         instance = this;
         this.saveDefaultConfig();
 
-        this.saveResource("Language/zh_CN.properties");
-        this.saveResource("Language/en_US.properties");
-        this.language = new Language(new File(this.getDataFolder() + "/Language/" +
-                                this.getConfig().getString("language", "zh_CN") + ".properties"));
+        this.loadLanguage();
+    }
+
+    private void loadLanguage() {
+        List<String> languageList = Arrays.asList("zh_CN", "en_US");
+        for (String s : languageList) {
+            this.saveResource("Language/" + s + ".properties");
+        }
+        String l = this.getConfig().getString("language", "zh_CN");
+        this.language = new Language(new File(this.getDataFolder() + "/Language/" + l + ".properties"));
+        if (languageList.contains(l)) {
+            Config config = new Config(Config.PROPERTIES);
+            config.load(this.getResource("Language/" + l + ".properties"));
+            this.language.update(config);
+        }
     }
 
     @Override
