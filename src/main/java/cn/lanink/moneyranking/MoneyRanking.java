@@ -8,6 +8,9 @@ import cn.lanink.rankingapi.RankingAPI;
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerLocallyInitializedEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
@@ -22,7 +25,7 @@ import java.util.Map;
 /**
  * @author lt_name
  */
-public class MoneyRanking extends PluginBase {
+public class MoneyRanking extends PluginBase implements Listener {
 
     public static final String VERSION = "?";
 
@@ -39,6 +42,9 @@ public class MoneyRanking extends PluginBase {
 
     @Getter
     private Language language;
+
+    @Getter
+    private Config playerLog;
 
     public static MoneyRanking getInstance() {
         return instance;
@@ -70,6 +76,8 @@ public class MoneyRanking extends PluginBase {
     public void onEnable() {
         this.defaultMoneyProvider = new MoneyProvider();
 
+        this.playerLog = new Config(this.getDataFolder() + "/PlayerLog.yml", Config.YAML);
+
         HashMap<MoneyProvider.EconomyAPIType, MoneyProvider> moneyProviders = this.getMoneyProviders();
         moneyProviders.put(MoneyProvider.EconomyAPIType.ECONOMY_API, new MoneyProvider(MoneyProvider.EconomyAPIType.ECONOMY_API));
         moneyProviders.put(MoneyProvider.EconomyAPIType.MONEY, new MoneyProvider(MoneyProvider.EconomyAPIType.MONEY));
@@ -77,6 +85,7 @@ public class MoneyRanking extends PluginBase {
         moneyProviders.put(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY, new MoneyProvider(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY));
 
         this.getServer().getPluginManager().registerEvents(new FormListener(this), this);
+        this.getServer().getPluginManager().registerEvents(this, this);
 
         //等所有经济前置加载完成后加载排行榜
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
@@ -133,6 +142,13 @@ public class MoneyRanking extends PluginBase {
             return true;
         }
         return false;
+    }
+
+    @EventHandler
+    public void onPlayerLocallyInitialized(PlayerLocallyInitializedEvent event) {
+        String uuid = event.getPlayer().getUniqueId().toString();
+        this.playerLog.set(uuid + ".lastLoginTime", System.currentTimeMillis());
+        this.playerLog.save();
     }
 
 }

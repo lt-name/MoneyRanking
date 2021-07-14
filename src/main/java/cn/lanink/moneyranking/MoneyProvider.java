@@ -154,13 +154,22 @@ public class MoneyProvider {
 
     public Map<String, Double> uuidToName(Map<String, Double> uuidMap) {
         HashMap<String, Double> map = new HashMap<>();
+        HashMap<String, Long> lastTimes = new HashMap<>();
         for (Map.Entry<String, Double> entry : uuidMap.entrySet()) {
             UUID uuid = UUID.fromString(entry.getKey());
             String name = Server.getInstance().getOfflinePlayer(uuid).getName();
             if (name == null || name.trim().equals("")) {
                 continue;
             }
+            long lastTime = MoneyRanking.getInstance().getPlayerLog().getLong(entry.getKey() + ".lastLoginTime", 0);
+            //名称重复以最后登录时间为准
+            if (map.containsKey(name)) {
+                if (lastTime < lastTimes.getOrDefault(name, 0L)) {
+                    continue;
+                }
+            }
             map.put(name, entry.getValue());
+            lastTimes.put(name, lastTime);
         }
         return map;
     }
