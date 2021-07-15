@@ -10,6 +10,7 @@ import net.lldv.llamaeconomy.LlamaEconomy;
 import net.player.api.Point;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -140,11 +141,17 @@ public class MoneyProvider {
             case PLAYER_POINT:
                 LinkedHashMap<String, Double> pointMap = new LinkedHashMap<>();
                 for (Map.Entry<String, Number> entry : Point.getPlayerRankingList().entrySet()) {
-                    pointMap.put(entry.getKey(), Double.valueOf(entry.getValue().toString()));
+                    pointMap.put(entry.getKey(),
+                            new BigDecimal(entry.getValue().toString()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 }
                 return this.uuidToName(pointMap);
             case LLAMA_ECONOMY:
-                return LlamaEconomy.getAPI().getAll();
+                HashMap<String, Double> lllamaMap = new HashMap<>();
+                for (Map.Entry<String, Double> entry : LlamaEconomy.getAPI().getAll().entrySet()) {
+                    lllamaMap.put(entry.getKey(),
+                            BigDecimal.valueOf(entry.getValue()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
+                return lllamaMap;
             default:
                 HashMap<String, Double> emptyMap = new HashMap<>();
                 emptyMap.put(MoneyRanking.getInstance().getLanguage().translateString("ranking_empty_data"), -1D);
@@ -168,6 +175,9 @@ public class MoneyProvider {
                     continue;
                 }
             }
+
+            entry.setValue(BigDecimal.valueOf(entry.getValue()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
             map.put(name, entry.getValue());
             lastTimes.put(name, lastTime);
         }
