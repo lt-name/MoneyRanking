@@ -3,6 +3,7 @@ package cn.lanink.moneyranking;
 import cn.lanink.moneyranking.form.FormCreate;
 import cn.lanink.moneyranking.form.FormListener;
 import cn.lanink.moneyranking.utils.Language;
+import cn.lanink.moneyranking.utils.MetricsLite;
 import cn.lanink.rankingapi.Ranking;
 import cn.lanink.rankingapi.RankingAPI;
 import cn.nukkit.Player;
@@ -89,6 +90,12 @@ public class MoneyRanking extends PluginBase implements Listener {
 
         //等所有经济前置加载完成后加载排行榜
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
+
+        try {
+            new MetricsLite(this, 12058);
+        } catch (Exception ignored) {
+
+        }
 
         this.getLogger().info("§eMoneyRanking §aEnabled！ Version:" + VERSION);
         this.getServer().getScheduler().scheduleTask(this, () ->
