@@ -6,6 +6,7 @@ import cn.lanink.moneyranking.utils.Language;
 import cn.lanink.moneyranking.utils.MetricsLite;
 import cn.lanink.rankingapi.Ranking;
 import cn.lanink.rankingapi.RankingAPI;
+import cn.lanink.rankingapi.RankingFormat;
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
@@ -119,11 +120,29 @@ public class MoneyRanking extends PluginBase implements Listener {
                 (double) data.get("x"),
                 (double) data.get("y"),
                 (double) data.get("z"),
-                this.getServer().getLevelByName(levelName));
+                this.getServer().getLevelByName(levelName)
+        );
+
         Ranking ranking = RankingAPI.createRanking(this, name, position);
+
         MoneyProvider.EconomyAPIType moneyProvider = MoneyProvider.EconomyAPIType.fromName(
                 (String) data.getOrDefault("moneyProvider", this.getDefaultMoneyProvider().getEconomyAPIType().toString()));
         ranking.setRankingList(() -> this.getMoneyProviders().get(moneyProvider).getAllPlayerMoney());
+
+        if (data.containsKey("rankingFormat")) {
+            try {
+                RankingFormat rankingFormat = RankingFormat.getDefaultFormat();
+                HashMap<String, String> formatDataMap = (HashMap<String, String>) data.getOrDefault("rankingFormat", new HashMap<>());
+                rankingFormat.setTop(formatDataMap.get("top"));
+                rankingFormat.setLine(formatDataMap.get("line"));
+                rankingFormat.setLineSelf(formatDataMap.get("lineSelf"));
+                rankingFormat.setBottom(formatDataMap.get("bottom"));
+                ranking.setRankingFormat(rankingFormat);
+            } catch (Exception e) {
+                this.getLogger().error(this.getLanguage().translateString("ranking_format_error", name), e);
+            }
+        }
+
         Ranking oldRanking = this.getRankings().put(name, ranking);
         if (oldRanking != null) {
             oldRanking.close();

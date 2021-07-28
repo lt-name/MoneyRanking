@@ -2,6 +2,8 @@ package cn.lanink.moneyranking.form;
 
 import cn.lanink.moneyranking.MoneyProvider;
 import cn.lanink.moneyranking.MoneyRanking;
+import cn.lanink.moneyranking.form.windows.AdvancedFormWindowCustom;
+import cn.lanink.moneyranking.form.windows.AdvancedFormWindowSimple;
 import cn.lanink.rankingapi.Ranking;
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
@@ -10,7 +12,6 @@ import cn.nukkit.event.player.PlayerFormRespondedEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.form.response.FormResponseCustom;
 import cn.nukkit.form.window.FormWindowCustom;
-import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.utils.Config;
 
 import java.util.HashMap;
@@ -36,6 +37,13 @@ public class FormListener implements Listener {
 
     @EventHandler
     public void onPlayerFormResponded(PlayerFormRespondedEvent event) {
+        if (AdvancedFormWindowSimple.onEvent(event.getWindow(), event.getPlayer())) {
+            return;
+        }
+        if (AdvancedFormWindowCustom.onEvent(event.getWindow(), event.getPlayer())) {
+            return;
+        }
+
         Player player = event.getPlayer();
         if (player == null || event.getWindow() == null) {
             return;
@@ -48,19 +56,7 @@ public class FormListener implements Listener {
         if (event.getResponse() == null) {
             return;
         }
-        if (event.getWindow() instanceof FormWindowSimple) {
-            FormWindowSimple windowSimple = (FormWindowSimple) event.getWindow();
-            if (cache == FormCreate.FormType.MAIN_MENU) {
-                switch (windowSimple.getResponse().getClickedButtonId()) {
-                    case 0:
-                        FormCreate.sendAddRankingMenu(player);
-                        break;
-                    case 1:
-                        FormCreate.sendRemoveRankingMenu(player);
-                        break;
-                }
-            }
-        }else if (event.getWindow() instanceof FormWindowCustom) {
+        if (event.getWindow() instanceof FormWindowCustom) {
             FormResponseCustom response = ((FormWindowCustom) event.getWindow()).getResponse();
 
             if (cache == FormCreate.FormType.ADD_RANKING_MENU) {
