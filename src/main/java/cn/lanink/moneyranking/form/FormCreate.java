@@ -10,8 +10,6 @@ import cn.lanink.rankingapi.Ranking;
 import cn.nukkit.Player;
 import cn.nukkit.form.element.ElementDropdown;
 import cn.nukkit.form.element.ElementInput;
-import cn.nukkit.form.window.FormWindow;
-import cn.nukkit.form.window.FormWindowCustom;
 import cn.nukkit.utils.Config;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,24 +23,10 @@ import java.util.Map;
  */
 public class FormCreate {
 
-    public static final String PLUGIN_NAME = "MoneyRanking";
-
-    public static final HashMap<Player, HashMap<Integer, FormType>> FORM_CACHE = new HashMap<>();
+    public static final String PLUGIN_NAME = "§1M§ao§3n§4e§5y§6R§7a§an§bk§ci§dn§3g";
 
     private FormCreate() {
-
-    }
-
-    public enum FormType {
-
-        MAIN_MENU,
-        ADD_RANKING_MENU,
-        REMOVE_RANKING_MENU
-
-    }
-
-    private static void showFormWindow(@NotNull Player player, @NotNull FormWindow window, @NotNull FormType formType) {
-        FORM_CACHE.computeIfAbsent(player, i -> new HashMap<>()).put(player.showFormWindow(window), formType);
+        throw new RuntimeException("FormCreate类不允许实例化");
     }
 
     public static void sendMainMenu(@NotNull Player player) {
@@ -58,7 +42,7 @@ public class FormCreate {
     }
 
     public static void sendAddRankingMenu(@NotNull Player player) {
-        FormWindowCustom custom = new FormWindowCustom(PLUGIN_NAME);
+        AdvancedFormWindowCustom custom = new AdvancedFormWindowCustom(PLUGIN_NAME);
         custom.addElement(new ElementInput(MoneyRanking.getInstance().getLanguage().translateString("ranking_name")));
         ArrayList<String> list = new ArrayList<>();
         for (MoneyProvider.EconomyAPIType economyAPIType : MoneyProvider.EconomyAPIType.values()) {
@@ -68,18 +52,65 @@ public class FormCreate {
             list.add(economyAPIType.getName());
         }
         custom.addElement(new ElementDropdown(MoneyRanking.getInstance().getLanguage().translateString("economic_API"), list));
-        showFormWindow(player, custom, FormType.ADD_RANKING_MENU);
+
+        custom.onResponded((formResponseCustom, cp) -> {
+            String name = formResponseCustom.getInputResponse(0);
+            if ("".equals(name.trim())) {
+                cp.sendMessage(MoneyRanking.getInstance().getLanguage().translateString("ranking-name-can-not-be-empty"));
+                return;
+            }
+            String eapi = formResponseCustom.getDropdownResponse(1).getElementContent();
+
+            Config config = MoneyRanking.getInstance().getConfig();
+            HashMap<String, Map<String, Object>> rankings = config.get("rankings", new HashMap<>());
+
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("x", cp.getX());
+            data.put("y", cp.getY());
+            data.put("z", cp.getZ());
+            data.put("level", player.getLevel().getFolderName());
+            if (MoneyProvider.EconomyAPIType.isExist(eapi)) {
+                data.put("moneyProvider", eapi);
+            } else {
+                cp.sendMessage(MoneyRanking.getInstance().getLanguage().translateString("use_default_economic_core", eapi));
+            }
+            MoneyRanking.getInstance().loadRanking(name, data);
+            rankings.put(name, data);
+            config.set("rankings", rankings);
+            config.save();
+            cp.sendMessage(MoneyRanking.getInstance().getLanguage().translateString("ranking_added_successfully"));
+        });
+
+        player.showFormWindow(custom);
     }
 
     public static void sendRemoveRankingMenu(@NotNull Player player) {
-        FormWindowCustom custom = new FormWindowCustom(PLUGIN_NAME);
+        AdvancedFormWindowCustom custom = new AdvancedFormWindowCustom(PLUGIN_NAME);
         custom.addElement(new ElementDropdown(MoneyRanking.getInstance().getLanguage().translateString("select_the_ranking_to_delete"),
                 new ArrayList<>(MoneyRanking.getInstance().getRankings().keySet())));
-        showFormWindow(player, custom, FormType.REMOVE_RANKING_MENU);
+
+        custom.onResponded((formResponseCustom, cp) -> {
+            String name = formResponseCustom.getDropdownResponse(0).getElementContent();
+            Config config = MoneyRanking.getInstance().getConfig();
+            HashMap<String, Map<String, Object>> rankings = config.get("rankings", new HashMap<>());
+            if (rankings.containsKey(name)) {
+                rankings.remove(name);
+                config.set("rankings", rankings);
+                config.save();
+            }
+            Ranking oldRanking = MoneyRanking.getInstance().getRankings().remove(name);
+            if (oldRanking != null) {
+                oldRanking.close();
+            }
+            cp.sendMessage( MoneyRanking.getInstance().getLanguage().translateString("ranking_deleted_successfully"));
+        });
+
+        player.showFormWindow(custom);
     }
 
     public static void sendSetFormatMenu(@NotNull Player player) {
-        AdvancedFormWindowSimple simple = new AdvancedFormWindowSimple(PLUGIN_NAME);
+        AdvancedFormWindowSimple simple = new AdvancedFormWindowSimple(PLUGIN_NAME,
+                MoneyRanking.getInstance().getLanguage().translateString("ranking_format_setSelect"));
         for (Map.Entry<String, Ranking> entry : MoneyRanking.getInstance().getRankings().entrySet()) {
             simple.addButton(new ResponseElementButton(entry.getKey()).onClicked(cp -> sendSetRankingFormat(cp, entry.getKey())));
         }

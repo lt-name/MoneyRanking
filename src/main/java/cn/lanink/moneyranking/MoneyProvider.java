@@ -121,7 +121,8 @@ public class MoneyProvider {
         //debug
         if (RankingAPI.debug) {
             HashMap<String, Double> debugMap = new HashMap<>();
-            debugMap.put("ltname", Double.MAX_VALUE);
+            debugMap.put("debug true - max", Double.MAX_VALUE);
+            debugMap.put("debug true - min", Double.MIN_VALUE);
             Random random = new Random();
             for (int i=0; i < 100000; i++) {
                 debugMap.put("test" + random.nextInt(10000000), random.nextInt(1000000) * 1D);

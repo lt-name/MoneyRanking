@@ -1,7 +1,8 @@
 package cn.lanink.moneyranking;
 
 import cn.lanink.moneyranking.form.FormCreate;
-import cn.lanink.moneyranking.form.FormListener;
+import cn.lanink.moneyranking.form.windows.AdvancedFormWindowCustom;
+import cn.lanink.moneyranking.form.windows.AdvancedFormWindowSimple;
 import cn.lanink.moneyranking.utils.Language;
 import cn.lanink.moneyranking.utils.MetricsLite;
 import cn.lanink.rankingapi.Ranking;
@@ -12,11 +13,13 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerFormRespondedEvent;
 import cn.nukkit.event.player.PlayerLocallyInitializedEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Arrays;
@@ -86,7 +89,6 @@ public class MoneyRanking extends PluginBase implements Listener {
         moneyProviders.put(MoneyProvider.EconomyAPIType.PLAYER_POINT, new MoneyProvider(MoneyProvider.EconomyAPIType.PLAYER_POINT));
         moneyProviders.put(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY, new MoneyProvider(MoneyProvider.EconomyAPIType.LLAMA_ECONOMY));
 
-        this.getServer().getPluginManager().registerEvents(new FormListener(this), this);
         this.getServer().getPluginManager().registerEvents(this, this);
 
         //等所有经济前置加载完成后加载排行榜
@@ -110,7 +112,7 @@ public class MoneyRanking extends PluginBase implements Listener {
         }
     }
 
-    public void loadRanking(String name, Map<String, Object> data) {
+    public void loadRanking(@NotNull String name, @NotNull Map<String, Object> data) {
         String levelName = (String) data.get("level");
         if (!this.getServer().loadLevel(levelName)) {
             this.getLogger().error(this.getLanguage().translateString("ranking_loadFailed_world", levelName));
@@ -168,6 +170,14 @@ public class MoneyRanking extends PluginBase implements Listener {
             return true;
         }
         return false;
+    }
+
+    @EventHandler
+    public void onPlayerFormResponded(PlayerFormRespondedEvent event) {
+        if (AdvancedFormWindowSimple.onEvent(event.getWindow(), event.getPlayer())) {
+            return;
+        }
+        AdvancedFormWindowCustom.onEvent(event.getWindow(), event.getPlayer());
     }
 
     @EventHandler
