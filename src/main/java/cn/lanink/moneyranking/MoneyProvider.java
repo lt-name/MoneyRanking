@@ -11,7 +11,10 @@ import net.player.api.Point;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -164,8 +167,7 @@ public class MoneyProvider {
         HashMap<String, Double> map = new HashMap<>();
         HashMap<String, Long> lastTimes = new HashMap<>();
         for (Map.Entry<String, Double> entry : uuidMap.entrySet()) {
-            UUID uuid = UUID.fromString(entry.getKey());
-            String name = Server.getInstance().getOfflinePlayer(uuid).getName();
+            String name = MoneyRanking.getInstance().getNameByUUID(entry.getKey());
             if (name == null || name.trim().equals("")) {
                 continue;
             }

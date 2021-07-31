@@ -9,6 +9,7 @@ import cn.lanink.rankingapi.Ranking;
 import cn.lanink.rankingapi.RankingAPI;
 import cn.lanink.rankingapi.RankingFormat;
 import cn.nukkit.Player;
+import cn.nukkit.Server;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
@@ -22,10 +23,8 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lt_name
@@ -50,6 +49,9 @@ public class MoneyRanking extends PluginBase implements Listener {
 
     @Getter
     private Config playerLog;
+
+    @Getter
+    private final ConcurrentHashMap<String, String> nameCache = new ConcurrentHashMap<>();
 
     public static MoneyRanking getInstance() {
         return instance;
@@ -157,6 +159,7 @@ public class MoneyRanking extends PluginBase implements Listener {
             ranking.close();
         }
         this.getRankings().clear();
+        this.nameCache.clear();
     }
 
     @Override
@@ -172,6 +175,17 @@ public class MoneyRanking extends PluginBase implements Listener {
         return false;
     }
 
+    public String getNameByUUID(String uuid) {
+        if (!this.nameCache.containsKey(uuid)) {
+            String name = Server.getInstance().getOfflinePlayer(UUID.fromString(uuid)).getName();
+            if (name == null || name.trim().equals("")) {
+                return null;
+            }
+            this.nameCache.put(uuid, name);
+        }
+        return this.nameCache.get(uuid);
+    }
+
     @EventHandler
     public void onPlayerFormResponded(PlayerFormRespondedEvent event) {
         if (AdvancedFormWindowSimple.onEvent(event.getWindow(), event.getPlayer())) {
@@ -182,7 +196,9 @@ public class MoneyRanking extends PluginBase implements Listener {
 
     @EventHandler
     public void onPlayerLocallyInitialized(PlayerLocallyInitializedEvent event) {
-        String uuid = event.getPlayer().getUniqueId().toString();
+        Player player = event.getPlayer();
+        String uuid = player.getUniqueId().toString();
+        this.nameCache.put(uuid, player.getName());
         this.playerLog.set(uuid + ".lastLoginTime", System.currentTimeMillis());
         this.playerLog.save();
     }
