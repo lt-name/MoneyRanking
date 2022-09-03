@@ -19,6 +19,8 @@ import cn.nukkit.event.player.PlayerLocallyInitializedEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,6 +42,9 @@ public class MoneyRanking extends PluginBase implements Listener {
 
     @Getter
     private final HashMap<MoneyProvider.EconomyAPIType, MoneyProvider> moneyProviders = new HashMap<>();
+
+    @Getter
+    private final HashMap<String, RankingData> rankingDataMap = new HashMap<>();
 
     @Getter
     private final HashMap<String, Ranking> rankings = new HashMap<>();
@@ -96,6 +101,15 @@ public class MoneyRanking extends PluginBase implements Listener {
         //等所有经济前置加载完成后加载排行榜
         this.getServer().getScheduler().scheduleTask(this, this::loadAllRanking);
 
+        this.getServer().getScheduler().scheduleDelayedRepeatingTask(this, () -> {
+            for (Map.Entry<String, RankingData> entry : this.getRankingDataMap().entrySet()) {
+                Ranking ranking = this.getRankings().get(entry.getKey());
+                if (ranking != null) {
+                    ranking.setRankingList(this.getMoneyProviders().get(entry.getValue().getEconomyAPIType()).getAllPlayerMoney());
+                }
+            }
+        }, 20, 100, true);
+
         try {
             new MetricsLite(this, 12058);
         } catch (Exception ignored) {
@@ -131,22 +145,23 @@ public class MoneyRanking extends PluginBase implements Listener {
 
         MoneyProvider.EconomyAPIType moneyProvider = MoneyProvider.EconomyAPIType.fromName(
                 (String) data.getOrDefault("moneyProvider", this.getDefaultMoneyProvider().getEconomyAPIType().toString()));
-        ranking.setRankingList(() -> this.getMoneyProviders().get(moneyProvider).getAllPlayerMoney());
+        //ranking.setRankingList(() -> this.getMoneyProviders().get(moneyProvider).getAllPlayerMoney());
 
+        RankingFormat rankingFormat = RankingFormat.getDefaultFormat();
         if (data.containsKey("rankingFormat")) {
             try {
-                RankingFormat rankingFormat = RankingFormat.getDefaultFormat();
                 HashMap<String, String> formatDataMap = (HashMap<String, String>) data.getOrDefault("rankingFormat", new HashMap<>());
                 rankingFormat.setTop(formatDataMap.get("top"));
                 rankingFormat.setLine(formatDataMap.get("line"));
                 rankingFormat.setLineSelf(formatDataMap.get("lineSelf"));
                 rankingFormat.setBottom(formatDataMap.get("bottom"));
-                ranking.setRankingFormat(rankingFormat);
             } catch (Exception e) {
                 this.getLogger().error(this.getLanguage().translateString("ranking_format_error", name), e);
             }
         }
+        ranking.setRankingFormat(rankingFormat);
 
+        this.getRankingDataMap().put(name, new RankingData(position, moneyProvider, rankingFormat));
         Ranking oldRanking = this.getRankings().put(name, ranking);
         if (oldRanking != null) {
             oldRanking.close();
@@ -159,6 +174,7 @@ public class MoneyRanking extends PluginBase implements Listener {
             ranking.close();
         }
         this.getRankings().clear();
+        this.getRankingDataMap().clear();
         this.nameCache.clear();
     }
 
@@ -201,6 +217,16 @@ public class MoneyRanking extends PluginBase implements Listener {
         this.nameCache.put(uuid, player.getName());
         this.playerLog.set(uuid + ".lastLoginTime", System.currentTimeMillis());
         this.playerLog.save();
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class RankingData {
+
+        private Position position;
+        private MoneyProvider.EconomyAPIType economyAPIType;
+        private RankingFormat rankingFormat;
+
     }
 
 }
