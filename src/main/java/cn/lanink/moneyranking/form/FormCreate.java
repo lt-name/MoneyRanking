@@ -1,12 +1,12 @@
 package cn.lanink.moneyranking.form;
 
+import cn.lanink.gamecore.form.element.ResponseElementButton;
+import cn.lanink.gamecore.form.windows.AdvancedFormWindowCustom;
+import cn.lanink.gamecore.form.windows.AdvancedFormWindowSimple;
+import cn.lanink.gamecore.ranking.Ranking;
 import cn.lanink.moneyranking.MoneyProvider;
 import cn.lanink.moneyranking.MoneyRanking;
-import cn.lanink.moneyranking.form.element.ResponseElementButton;
-import cn.lanink.moneyranking.form.windows.AdvancedFormWindowCustom;
-import cn.lanink.moneyranking.form.windows.AdvancedFormWindowSimple;
 import cn.lanink.moneyranking.utils.Language;
-import cn.lanink.rankingapi.Ranking;
 import cn.nukkit.Player;
 import cn.nukkit.form.element.ElementDropdown;
 import cn.nukkit.form.element.ElementInput;

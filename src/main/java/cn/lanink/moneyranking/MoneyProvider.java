@@ -1,6 +1,6 @@
 package cn.lanink.moneyranking;
 
-import cn.lanink.rankingapi.RankingAPI;
+import cn.lanink.gamecore.GameCore;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import lombok.Getter;
@@ -123,7 +123,7 @@ public class MoneyProvider {
 
     public Map<String, Double> getAllPlayerMoney() {
         //debug
-        if (RankingAPI.debug) {
+        if (GameCore.debug) {
             HashMap<String, Double> debugMap = new HashMap<>();
             debugMap.put("debug true - max", Double.MAX_VALUE);
             debugMap.put("debug true - min", Double.MIN_VALUE);

@@ -1,20 +1,17 @@
 package cn.lanink.moneyranking;
 
+import cn.lanink.gamecore.ranking.Ranking;
+import cn.lanink.gamecore.ranking.RankingAPI;
+import cn.lanink.gamecore.ranking.RankingFormat;
 import cn.lanink.moneyranking.form.FormCreate;
-import cn.lanink.moneyranking.form.windows.AdvancedFormWindowCustom;
-import cn.lanink.moneyranking.form.windows.AdvancedFormWindowSimple;
 import cn.lanink.moneyranking.utils.Language;
 import cn.lanink.moneyranking.utils.MetricsLite;
-import cn.lanink.rankingapi.Ranking;
-import cn.lanink.rankingapi.RankingAPI;
-import cn.lanink.rankingapi.RankingFormat;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.player.PlayerFormRespondedEvent;
 import cn.nukkit.event.player.PlayerLocallyInitializedEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
@@ -205,14 +202,6 @@ public class MoneyRanking extends PluginBase implements Listener {
             }
         }
         return this.nameCache.get(uuid);
-    }
-
-    @EventHandler
-    public void onPlayerFormResponded(PlayerFormRespondedEvent event) {
-        if (AdvancedFormWindowSimple.onEvent(event.getWindow(), event.getPlayer())) {
-            return;
-        }
-        AdvancedFormWindowCustom.onEvent(event.getWindow(), event.getPlayer());
     }
 
     @EventHandler

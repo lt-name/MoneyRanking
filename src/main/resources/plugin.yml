@@ -1,11 +1,11 @@
 name: MoneyRanking
 main: cn.lanink.moneyranking.MoneyRanking
-version: "1.2.2-SNAPSHOT"
+version: "1.3.0"
 api: ["1.0.0"]
 load: POSTWORLD
 author: "LT_Name"
 depend:
-  - "RankingAPI"
+  - "MemoriesOfTime-GameCore"
 softdepend:
   - "playerPoints"
   - "EconomyAPI"
