@@ -193,11 +193,16 @@ public class MoneyRanking extends PluginBase implements Listener {
 
     public String getNameByUUID(String uuid) {
         if (!this.nameCache.containsKey(uuid)) {
-            String name = Server.getInstance().getOfflinePlayer(UUID.fromString(uuid)).getName();
-            if (name == null || name.trim().equals("")) {
+            try {
+                String name = Server.getInstance().getOfflinePlayer(UUID.fromString(uuid)).getName();
+                if (name == null || "".equals(name.trim())) {
+                    return null;
+                }
+                this.nameCache.put(uuid, name);
+            } catch (Exception e) {
+                this.getLogger().error(this.getLanguage().translateString("player_getNameByUUID_error", uuid));
                 return null;
             }
-            this.nameCache.put(uuid, name);
         }
         return this.nameCache.get(uuid);
     }

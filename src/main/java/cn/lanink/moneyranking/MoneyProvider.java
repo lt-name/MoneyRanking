@@ -169,7 +169,7 @@ public class MoneyProvider {
         HashMap<String, Long> lastTimes = new HashMap<>();
         for (Map.Entry<String, Double> entry : uuidMap.entrySet()) {
             String name = MoneyRanking.getInstance().getNameByUUID(entry.getKey());
-            if (name == null || name.trim().equals("")) {
+            if (name == null || "".equals(name.trim())) {
                 continue;
             }
             long lastTime = MoneyRanking.getInstance().getPlayerLog().getLong(entry.getKey() + ".lastLoginTime", 0);
